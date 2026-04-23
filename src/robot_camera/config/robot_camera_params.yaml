@@ -1,0 +1,39 @@
+robot_camera:
+  ros__parameters:
+    camera_device: "/dev/video0"
+    publish_rate: 5.0
+    real_face_width_cm: 14.0
+    focal_length_px: 557.14
+    ema_alpha: 0.6
+    lost_timeout_sec: 3.0
+    frame_width: 640
+    frame_height: 480
+    processing_scale: 0.5
+    owner_data_dir: "/home/ubuntu/urg_robot/src/robot_camera/owner_data"
+    match_threshold: 0.45
+    show_debug_window: true
+    center_tolerance_px: 120.0
+
+    angular_deadband: 0.15
+    path_curve_gain: 1.5
+
+haptic_controller:
+  ros__parameters:
+    min_distance: 1.0
+    max_distance: 1.4
+    lost_person_stop: true
+
+    vib_off: 0
+    vib_light: 80
+    vib_medium: 150
+    vib_strong: 255
+
+esp32_bridge:
+  ros__parameters:
+    port: "/dev/ttyACM1"
+    baudrate: 115200
+    left_topic: "/vib_left"
+    center_topic: "/vib_center"
+    right_topic: "/vib_right"
+    send_period: 0.1
+    only_send_on_change: true

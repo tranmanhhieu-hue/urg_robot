@@ -1,0 +1,9 @@
+path_corridor_node:
+  ros__parameters:
+    odom_topic: /odom
+    left_path_topic: /wheel_path_left
+    right_path_topic: /wheel_path_right
+    frame_id: odom
+    wheel_base: 0.36
+    path_max_points: 1000
+    min_point_distance: 0.01
