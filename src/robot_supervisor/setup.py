@@ -32,6 +32,7 @@ setup(
             'commander = robot_supervisor.commander_node:main',
             'voice_chat = robot_supervisor.voice_chat_and_nav:main',
             'voice_chat_and_nav = robot_supervisor.voice_chat_and_nav_v1:main',
+            'navigation_alert_node = robot_supervisor.navigation_alert_node:main',
         ],
     },
 )

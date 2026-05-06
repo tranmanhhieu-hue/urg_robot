@@ -118,13 +118,28 @@ class HapticController(Node):
             self.publish_vibration(self.vib_medium, self.vib_medium, self.vib_medium)
             return
 
-        # Quá xa: rung mạnh cả 3 để báo đi nhanh lên
+        # Quá xa: rung lần lượt trái -> giữa -> phải, mỗi motor 2 giây, mức medium
         if self.person_distance > self.max_distance:
-            self.publish_vibration(self.vib_strong, self.vib_strong, self.vib_strong)
+            now = self.get_clock().now()
+            elapsed = (now - self.far_last_switch_time).nanoseconds / 1e9
+
+            if elapsed >= self.far_step_duration:
+                self.far_step = (self.far_step + 1) % 3
+                self.far_last_switch_time = now
+
+            if self.far_step == 0:
+                self.publish_vibration(self.vib_medium, self.vib_off, self.vib_off)
+
+            elif self.far_step == 1:
+                self.publish_vibration(self.vib_off, self.vib_medium, self.vib_off)
+
+            else:
+                self.publish_vibration(self.vib_off, self.vib_off, self.vib_medium)
+
             return
 
         # Trong khoảng an toàn: dẫn hướng
-        # -1 = người lệch trái  -> rung phải
+        # -1 = người lệch trái -> rung phải
         #  1 = người lệch phải -> rung trái
         #  0 = ở giữa          -> rung giữa vừa phải
         if self.person_guidance == -1:

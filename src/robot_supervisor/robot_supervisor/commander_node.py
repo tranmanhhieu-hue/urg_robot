@@ -219,11 +219,27 @@ class CommanderNode(Node):
 
     def cancel_navigation(self):
         if not self.current_goal_handle:
+            self.busy = False
+            self.current_goal_name = None
             self.publish_status({"event": "no_active_goal"})
             return
 
+        goal_name = self.current_goal_name
+
         cancel_future = self.current_goal_handle.cancel_goal_async()
-        cancel_future.add_done_callback(lambda f: self.publish_status({"event": "cancel_requested"}))
+
+        self.busy = False
+        self.publish_status({
+            "event": "cancel_requested",
+            "goal": goal_name
+        })
+
+        cancel_future.add_done_callback(
+            lambda f: self.publish_status({
+                "event": "nav_canceled",
+                "goal": goal_name
+            })
+        )
 
 
 def main():
