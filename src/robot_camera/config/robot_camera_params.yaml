@@ -3,7 +3,7 @@ robot_camera:
     camera_device: "/dev/video0"
     publish_rate: 5.0
     real_face_width_cm: 14.0
-    focal_length_px: 557.14
+    focal_length_px: 614.17
     ema_alpha: 0.6
     lost_timeout_sec: 3.0
     frame_width: 640

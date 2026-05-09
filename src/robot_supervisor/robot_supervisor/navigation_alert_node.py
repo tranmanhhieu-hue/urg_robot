@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import json
 
 import rclpy
 from rclpy.node import Node
@@ -60,6 +61,8 @@ class NavigationAlertNode(Node):
         self.latest_path = None
         self.last_alert_time = 0.0
         self.last_turn_alert = ''
+        self.obstacle_active = False
+        self.navigation_active = False
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -69,12 +72,38 @@ class NavigationAlertNode(Node):
         self.create_subscription(Path, self.path_topic, self.path_callback, 10)
         self.create_subscription(LaserScan, self.scan_topic, self.scan_callback, 10)
 
+        self.create_subscription(
+            String,
+            '/robot_status',
+            self.status_callback,
+            10
+        )
+
         self.create_timer(0.3, self.check_turn_alert)
 
         self.get_logger().info('Navigation alert node started')
 
     def path_callback(self, msg):
         self.latest_path = msg
+
+    def status_callback(self, msg):
+        try:
+            data = json.loads(msg.data)
+        except Exception:
+            return
+
+        event = data.get("event", "")
+
+        if event in ("busy", "nav_start", "goal_accepted"):
+            self.navigation_active = True
+
+        if event in (
+            "nav_done",
+            "nav_succeeded",
+            "nav_canceled",
+            "nav_aborted"
+        ):
+            self.navigation_active = False
 
     def can_alert(self):
         now = self.get_clock().now().nanoseconds / 1e9
@@ -143,6 +172,10 @@ class NavigationAlertNode(Node):
         return None
 
     def check_turn_alert(self):
+
+        if not self.navigation_active:
+            return
+
         if self.latest_path is None:
             return
 
@@ -213,6 +246,10 @@ class NavigationAlertNode(Node):
             self.last_turn_alert = alert
 
     def scan_callback(self, msg):
+
+        if not self.navigation_active:
+            return
+
         front_ranges = []
 
         angle = msg.angle_min
@@ -225,12 +262,17 @@ class NavigationAlertNode(Node):
             angle += msg.angle_increment
 
         if not front_ranges:
+            self.obstacle_active = False
             return
 
         min_front = min(front_ranges)
 
         if min_front <= self.obstacle_distance_m:
-            self.speak_alert('Phía trước cách 1 mét có chướng ngại vật')
+            if not self.obstacle_active:
+                self.speak_alert('Phía trước có vật cản')
+                self.obstacle_active = True
+        else:
+            self.obstacle_active = False
 
 
 def main(args=None):
